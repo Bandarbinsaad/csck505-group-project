@@ -3,8 +3,14 @@
 Set SENSOR_NAME to "proximity" (Experiment 1) or "lidar" (Experiment 2).
 All other logic is identical between runs. The maze, start and finish come
 from the group's maze.py (single source of truth). Reload the world before
-each run. Thresholds are placeholders - calibrate against the smoke-test
-evidence (proximity wall ~150-250; lidar wall ~0.18 m for a 0.25 m cell).
+each run.
+
+Calibration note: the e-puck accumulates lateral odometry drift, so a wall
+one cell away is read at 0.12-0.21 m rather than the nominal 0.125 m. The
+lidar threshold sits in the measured gap between "wall present" (<= ~0.21 m)
+and "cell open" (>= ~0.29 m). Proximity (IR) cannot see a wall a full cell
+away at all (see the report / smoke-test evidence); Experiment 1 is included
+to demonstrate that sensor limitation.
 """
 from __future__ import annotations
 
@@ -29,8 +35,8 @@ from end_of_module_assignment.maze.types import Heading  # noqa: E402
 
 SENSOR_NAME = "lidar"  # "proximity" | "lidar"
 START_HEADING = Heading.E           # e-puck starts facing east
-PROXIMITY_WALL_THRESHOLD = 200.0    # calibrate
-LIDAR_WALL_THRESHOLD_IN_METRES = 0.15  # calibrate
+PROXIMITY_WALL_THRESHOLD = 200.0    # calibrate (IR rises as a wall nears)
+LIDAR_WALL_THRESHOLD_IN_METRES = 0.22  # calibrated to the drift-widened gap
 MAX_STEP_COUNT = 200
 WARM_UP_STEP_COUNT = 3              # sensors need a step after enable
 
