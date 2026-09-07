@@ -24,7 +24,6 @@ LEFT_MOTOR_NAME = "left wheel motor"
 RIGHT_MOTOR_NAME = "right wheel motor"
 LEFT_ENCODER_NAME = "left wheel sensor"
 RIGHT_ENCODER_NAME = "right wheel sensor"
-_HEADING_ORDER = [Heading.N, Heading.E, Heading.S, Heading.W]
 
 
 class EpuckRobot(Robot):
@@ -144,15 +143,11 @@ class EpuckRobot(Robot):
 
         @param targetHeading the heading to adopt.
         """
-        steps = (
-            _HEADING_ORDER.index(targetHeading)
-            - _HEADING_ORDER.index(self._heading)
-        ) % 4
-        if steps == 1:
+        if targetHeading == self._heading.turnRight():
             self._rotate(90.0)
-        elif steps == 3:
+        elif targetHeading == self._heading.turnLeft():
             self._rotate(-90.0)
-        elif steps == 2:
+        elif targetHeading != self._heading:
             self._rotate(180.0)
         self._heading = targetHeading
 
