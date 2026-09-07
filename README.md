@@ -120,35 +120,6 @@ Only the thin driver and sensor wrappers touch the Webots `controller` module.
 
 ---
 
-## Project structure
-
-```
-src/end_of_module_assignment/
-├── maze/                 # the algorithm — no Webots imports, fully unit-tested
-│   ├── types.py          # Heading, Action, Sides, Cell
-│   ├── interfaces.py     # WallSensor / RobotDriver / ProbeRobotDriver protocols
-│   ├── policy.py         # the priority rule
-│   ├── explorer.py       # depth-first search for range sensors (LiDAR)
-│   ├── prober.py         # depth-first probe-and-map for short-range sensors (IR)
-│   ├── mapper.py         # 0/1/? occupancy grid + path, JSON/TXT dump
-│   ├── sensing_logic.py  # raw readings → four wall booleans
-│   └── offline_sim.py    # fake maze / robot / sensor for tests
-├── layouts/              # maze definitions + grid-to-world helpers
-│   ├── maze.py           # 5×5
-│   └── maze_complex.py   # 8×8 stress test
-└── render_map.py         # map.json → red-path PNG (the `render-map` command)
-
-controllers/micromouse/   # Webots-facing
-├── micromouse.py         # entry: picks maze + sensor, runs, dumps the map
-├── robot.py              # EpuckRobot — odometry + IMU turns
-└── sensing.py            # ProximitySensorArray, LidarWallSensor
-
-worlds/                   # maze_world.wbt (5×5), maze_world_complex.wbt (8×8)
-tests/                    # pytest suite for the pure logic
-```
-
----
-
 ## Getting started
 
 ### Prerequisites
