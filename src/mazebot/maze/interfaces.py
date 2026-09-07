@@ -1,4 +1,5 @@
 """Structural interfaces the pure logic depends on (typing.Protocol)."""
+
 from __future__ import annotations
 
 from typing import Protocol, runtime_checkable

@@ -1,12 +1,11 @@
 """Pure reductions from raw sensor readings to four wall booleans."""
+
 from __future__ import annotations
 
 from .types import Sides
 
 
-def proximityToSides(
-    proximityValues: list[float], wallThreshold: float
-) -> Sides:
+def proximityToSides(proximityValues: list[float], wallThreshold: float) -> Sides:
     """Reduce eight e-puck IR proximity readings to four wall booleans.
 
     IR proximity rises as an obstacle nears, so a side is walled when its
@@ -30,9 +29,7 @@ def proximityToSides(
     )
 
 
-def _angularDistanceInDegrees(
-    firstDegrees: float, secondDegrees: float
-) -> float:
+def _angularDistanceInDegrees(firstDegrees: float, secondDegrees: float) -> float:
     """Return the smallest angle between two bearings.
 
     @param firstDegrees a bearing in degrees.

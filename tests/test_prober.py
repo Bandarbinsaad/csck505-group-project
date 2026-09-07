@@ -31,9 +31,9 @@ def testFakeRobotSatisfiesProbeProtocol():
 def testTryMoveForwardReportsOpenAndBlocked():
     maze = FakeMaze(GROUP_MAZE)
     robot = FakeRobot(maze, (0, 3), Heading.E)  # east of (0,3) is (0,4) wall
-    assert robot.tryMoveForward() is False       # blocked, stays
+    assert robot.tryMoveForward() is False  # blocked, stays
     assert robot.cell == (0, 3)
-    robot.turnTo(Heading.S)                       # south is (1,3) open
+    robot.turnTo(Heading.S)  # south is (1,3) open
     assert robot.tryMoveForward() is True
     assert robot.cell == (1, 3)
 

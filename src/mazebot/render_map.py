@@ -1,4 +1,5 @@
 """Render a map.json dump to a PNG with the travelled path in red."""
+
 from __future__ import annotations
 
 import json
@@ -43,7 +44,7 @@ def render(jsonPath: str, pngPath: str) -> None:
     import matplotlib
 
     matplotlib.use("Agg")
-    import matplotlib.pyplot as pyplot
+    from matplotlib import pyplot
 
     with open(jsonPath, encoding="utf-8") as handle:
         data = json.load(handle)
@@ -53,9 +54,7 @@ def render(jsonPath: str, pngPath: str) -> None:
     rowCount = len(matrix)
     columnCount = len(matrix[0]) if matrix else 0
 
-    figure, axes = pyplot.subplots(
-        figsize=(columnCount * 0.5 + 1, rowCount * 0.5 + 1)
-    )
+    figure, axes = pyplot.subplots(figsize=(columnCount * 0.5 + 1, rowCount * 0.5 + 1))
     axes.imshow(rgb)
     axes.set_xticks(range(columnCount))
     axes.set_yticks(range(rowCount))

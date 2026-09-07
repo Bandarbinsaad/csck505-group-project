@@ -3,6 +3,7 @@
 Grid convention: Cell is (row, column); row increases south, column
 increases east. This matches the group's maze.py and the ENU world.
 """
+
 from __future__ import annotations
 
 from enum import Enum
@@ -10,7 +11,7 @@ from typing import NamedTuple
 
 Cell = tuple[int, int]
 
-_HEADING_ORDER: list["Heading"] = []
+_HEADING_ORDER: list[Heading] = []
 
 
 class Heading(Enum):
@@ -29,21 +30,21 @@ class Heading(Enum):
         """
         return self.value
 
-    def turnRight(self) -> "Heading":
+    def turnRight(self) -> Heading:
         """Return the heading 90 degrees clockwise of this one.
 
         @return the clockwise neighbour heading.
         """
         return _HEADING_ORDER[(_HEADING_ORDER.index(self) + 1) % 4]
 
-    def turnLeft(self) -> "Heading":
+    def turnLeft(self) -> Heading:
         """Return the heading 90 degrees anticlockwise of this one.
 
         @return the anticlockwise neighbour heading.
         """
         return _HEADING_ORDER[(_HEADING_ORDER.index(self) - 1) % 4]
 
-    def opposite(self) -> "Heading":
+    def opposite(self) -> Heading:
         """Return the heading facing the reverse of this one.
 
         @return the opposite heading.

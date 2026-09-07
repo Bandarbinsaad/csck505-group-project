@@ -8,6 +8,7 @@ unvisited direction opens, it backtracks one cell along the path stack, so
 it cannot circle forever. Only bumped walls are mapped, so the map is
 sparser than a range sensor's - a deliberate, instructive contrast.
 """
+
 from __future__ import annotations
 
 from .explorer import ExploreResult

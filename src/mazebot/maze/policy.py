@@ -1,4 +1,5 @@
 """The fixed-priority reactive movement rule (behaviour-based control)."""
+
 from __future__ import annotations
 
 from .types import Action, Sides

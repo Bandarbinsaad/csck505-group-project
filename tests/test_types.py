@@ -26,5 +26,8 @@ def testActionToHeading():
 def testSidesIsFourNamedBooleans():
     sides = Sides(front=True, left=False, right=False, back=True)
     assert (sides.front, sides.left, sides.right, sides.back) == (
-        True, False, False, True
+        True,
+        False,
+        False,
+        True,
     )

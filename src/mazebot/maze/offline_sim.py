@@ -1,4 +1,5 @@
 """In-memory doubles for exercising explorer + mapper without Webots."""
+
 from __future__ import annotations
 
 from .types import Cell, Heading, Sides
@@ -32,7 +33,9 @@ class FakeRobot:
     """A RobotDriver double: turns are instant, forward moves one open cell."""
 
     def __init__(
-        self, maze: FakeMaze, startCell: Cell,
+        self,
+        maze: FakeMaze,
+        startCell: Cell,
         startHeading: Heading = Heading.N,
     ) -> None:
         """Place the robot in a maze.
@@ -105,9 +108,7 @@ class FakeSensor:
 
         def wall(sideHeading: Heading) -> bool:
             rowDelta, columnDelta = sideHeading.offset
-            return self._maze.isWall(
-                (cell[0] + rowDelta, cell[1] + columnDelta)
-            )
+            return self._maze.isWall((cell[0] + rowDelta, cell[1] + columnDelta))
 
         return Sides(
             front=wall(heading),

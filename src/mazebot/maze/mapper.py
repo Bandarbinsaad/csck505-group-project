@@ -1,4 +1,5 @@
 """Incremental binary occupancy map built from sensor readings."""
+
 from __future__ import annotations
 
 import json
@@ -56,8 +57,7 @@ class Map:
         """
         self._set(cell, OBSTACLE)
 
-    def markWalls(self, cell: Cell, heading: Heading,
-                  walls: Sides) -> None:
+    def markWalls(self, cell: Cell, heading: Heading, walls: Sides) -> None:
         """Record walls sensed from a cell into its four neighbours.
 
         The current cell is marked free (the robot stands on it). Each
@@ -112,7 +112,9 @@ class Map:
         }
 
     def toDict(
-        self, sensorName: str = "", timeInSeconds: float = 0.0,
+        self,
+        sensorName: str = "",
+        timeInSeconds: float = 0.0,
         stepCount: int = 0,
     ) -> dict:
         """Serialise the map and run metadata to a plain dict.
@@ -134,8 +136,11 @@ class Map:
         }
 
     def dump(
-        self, pathPrefix: str, sensorName: str = "",
-        timeInSeconds: float = 0.0, stepCount: int = 0,
+        self,
+        pathPrefix: str,
+        sensorName: str = "",
+        timeInSeconds: float = 0.0,
+        stepCount: int = 0,
     ) -> None:
         """Write <prefix>.json and <prefix>.txt to disk.
 
@@ -148,5 +153,4 @@ class Map:
         with open(pathPrefix + ".json", "w", encoding="utf-8") as handle:
             json.dump(data, handle, indent=2)
         with open(pathPrefix + ".txt", "w", encoding="utf-8") as handle:
-            for row in self.toMatrix():
-                handle.write(" ".join(row) + "\n")
+            handle.writelines(" ".join(row) + "\n" for row in self.toMatrix())

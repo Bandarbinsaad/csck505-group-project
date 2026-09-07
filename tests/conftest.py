@@ -1,4 +1,5 @@
 """A fake Webots `controller` module so the Webots layer imports off-sim."""
+
 import sys
 import types as pythonTypes
 

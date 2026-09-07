@@ -2,24 +2,22 @@ import importlib
 import sys
 from pathlib import Path
 
-CONTROLLER_DIR = (
-    Path(__file__).resolve().parents[1] / "controllers" / "micromouse"
-)
+CONTROLLER_DIR = Path(__file__).resolve().parents[1] / "controllers" / "micromouse"
 sys.path.insert(0, str(CONTROLLER_DIR))
 
-from mazebot.maze.interfaces import (  # noqa: E402
+from mazebot.maze.interfaces import (
     RobotDriver,
     WallSensor,
 )
-from mazebot.maze.types import Heading, Sides  # noqa: E402
+from mazebot.maze.types import Heading, Sides
 
 
 def testProximityArrayReadsSides(fakeController):
     sensing = importlib.reload(importlib.import_module("sensing"))
     robot = fakeController.Robot()
-    robot.getDevice("ps0").value = 520   # front pair high
+    robot.getDevice("ps0").value = 520  # front pair high
     robot.getDevice("ps7").value = 60
-    robot.getDevice("ps2").value = 480   # right pair high
+    robot.getDevice("ps2").value = 480  # right pair high
     array = sensing.ProximitySensorArray(
         robot, samplingPeriodInMs=32, wallThreshold=200
     )

@@ -7,6 +7,7 @@ neighbour remains it backtracks one cell along the stack. This always
 terminates and reaches the goal if it is reachable - unlike a purely greedy
 rule, it cannot circle forever.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -88,9 +89,7 @@ def explore(
     while cell != goalCell and stepCount < maxStepCount:
         walls = sensor.read()
         grid.markWalls(cell, robot.heading, walls)
-        forward = _openUnvisitedHeading(
-            walls, robot.heading, cell, visitedCells
-        )
+        forward = _openUnvisitedHeading(walls, robot.heading, cell, visitedCells)
         if forward is not None:
             robot.turnTo(forward)
             robot.moveForward()

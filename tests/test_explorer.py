@@ -1,6 +1,6 @@
 from mazebot.maze.explorer import ExploreResult, explore
 from mazebot.maze.interfaces import RobotDriver, WallSensor
-from mazebot.maze.mapper import Map, OBSTACLE
+from mazebot.maze.mapper import OBSTACLE, Map
 from mazebot.maze.offline_sim import (
     FakeMaze,
     FakeRobot,
@@ -35,12 +35,10 @@ def testFakesSatisfyProtocols():
 
 
 def testSolvesGroupMazeWithoutLooping():
-    result, grid = runExploration(
-        GROUP_MAZE, (0, 0), (4, 4), Heading.E, 200
-    )
+    result, grid = runExploration(GROUP_MAZE, (0, 0), (4, 4), Heading.E, 200)
     assert isinstance(result, ExploreResult)
     assert result.reachedGoal is True
-    assert result.stepCount == 8       # the documented 9-cell route
+    assert result.stepCount == 8  # the documented 9-cell route
     assert grid.toMatrix()[0][4] == OBSTACLE  # a sensed wall
 
 

@@ -3,6 +3,7 @@
 The reduction logic lives in the pure sensing_logic module; these classes
 only wire Webots devices to it.
 """
+
 from __future__ import annotations
 
 from mazebot.maze.sensing_logic import (
@@ -12,7 +13,14 @@ from mazebot.maze.sensing_logic import (
 from mazebot.maze.types import Sides
 
 PROXIMITY_SENSOR_NAMES = (
-    "ps0", "ps1", "ps2", "ps3", "ps4", "ps5", "ps6", "ps7",
+    "ps0",
+    "ps1",
+    "ps2",
+    "ps3",
+    "ps4",
+    "ps5",
+    "ps6",
+    "ps7",
 )
 LIDAR_DEVICE_NAME = "lidar"
 
@@ -20,9 +28,7 @@ LIDAR_DEVICE_NAME = "lidar"
 class ProximitySensorArray:
     """The eight e-puck IR proximity sensors, read as four sides."""
 
-    def __init__(
-        self, robot, samplingPeriodInMs: int, wallThreshold: float
-    ) -> None:
+    def __init__(self, robot, samplingPeriodInMs: int, wallThreshold: float) -> None:
         """Retrieve and enable ps0..ps7.
 
         @param robot the Webots Robot owning the devices.

@@ -39,16 +39,14 @@ def testProximityBackPairHigh():
     # back pair (ps3, ps4) high => wall
     values = [60, 60, 60, 480, 60, 60, 60, 60]
     result = proximityToSides(values, wallThreshold=200)
-    assert result == Sides(front=False, left=False, right=False,
-                           back=True)
+    assert result == Sides(front=False, left=False, right=False, back=True)
 
 
 def testProximityLeftPairHigh():
     # left pair (ps5, ps6) high => wall
     values = [60, 60, 60, 60, 60, 60, 470, 60]
     result = proximityToSides(values, wallThreshold=200)
-    assert result == Sides(front=False, left=True, right=False,
-                           back=False)
+    assert result == Sides(front=False, left=True, right=False, back=False)
 
 
 def testLidarRightCardinal():

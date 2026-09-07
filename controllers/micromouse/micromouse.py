@@ -5,6 +5,7 @@ cell centre; "proximity" uses short-range IR, which cannot see a wall a full
 cell away and so discovers walls by probing (bumping) into them. The maze is
 chosen by the robot's Webots controllerArgs and defaults to "maze".
 """
+
 from __future__ import annotations
 
 import importlib
@@ -14,17 +15,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 _MAZE_NAME = sys.argv[1] if len(sys.argv) > 1 else "maze"
-maze = importlib.import_module(
-    "mazebot.layouts." + _MAZE_NAME
-)
+maze = importlib.import_module("mazebot.layouts." + _MAZE_NAME)
 
-from robot import EpuckRobot  # noqa: E402
-from sensing import LidarWallSensor, ProximitySensorArray  # noqa: E402
+from robot import EpuckRobot
+from sensing import LidarWallSensor, ProximitySensorArray
 
-from mazebot.maze.explorer import explore  # noqa: E402
-from mazebot.maze.mapper import Map  # noqa: E402
-from mazebot.maze.prober import exploreByProbing  # noqa: E402
-from mazebot.maze.types import Heading  # noqa: E402
+from mazebot.maze.explorer import explore
+from mazebot.maze.mapper import Map
+from mazebot.maze.prober import exploreByProbing
+from mazebot.maze.types import Heading
 
 SENSOR_NAME = "lidar"  # "proximity" | "lidar"
 START_HEADING = Heading.E
@@ -54,9 +53,7 @@ def runLidar(robot, samplingPeriodInMs, grid, goalCell):
     @param goalCell the finish (row, column).
     @return the ExploreResult.
     """
-    sensor = LidarWallSensor(
-        robot, samplingPeriodInMs, LIDAR_WALL_THRESHOLD_IN_METRES
-    )
+    sensor = LidarWallSensor(robot, samplingPeriodInMs, LIDAR_WALL_THRESHOLD_IN_METRES)
     warmUp(robot, samplingPeriodInMs)
     return explore(robot, sensor, grid, goalCell, maxStepCount=MAX_STEP_COUNT)
 
@@ -74,12 +71,8 @@ def runProximity(robot, samplingPeriodInMs, grid, goalCell):
         robot, samplingPeriodInMs, PROXIMITY_WALL_THRESHOLD
     )
     warmUp(robot, samplingPeriodInMs)
-    robot.attachFrontProbe(
-        lambda: proximity.frontValue() >= PROXIMITY_PROBE_CONTACT
-    )
-    return exploreByProbing(
-        robot, grid, goalCell, maxStepCount=MAX_STEP_COUNT
-    )
+    robot.attachFrontProbe(lambda: proximity.frontValue() >= PROXIMITY_PROBE_CONTACT)
+    return exploreByProbing(robot, grid, goalCell, maxStepCount=MAX_STEP_COUNT)
 
 
 def main():
@@ -102,16 +95,21 @@ def main():
     elapsedInSeconds = robot.getTime() - startTimeInSeconds
 
     grid.dump(
-        "map_" + SENSOR_NAME, sensorName=SENSOR_NAME,
-        timeInSeconds=elapsedInSeconds, stepCount=result.stepCount,
+        "map_" + SENSOR_NAME,
+        sensorName=SENSOR_NAME,
+        timeInSeconds=elapsedInSeconds,
+        stepCount=result.stepCount,
     )
     for row in grid.toMatrix():
         print(" ".join(row))
     print(
         "sensor=%s reachedGoal=%s time=%.2fs steps=%d visited=%d"
         % (
-            SENSOR_NAME, result.reachedGoal, elapsedInSeconds,
-            result.stepCount, result.cellsVisited,
+            SENSOR_NAME,
+            result.reachedGoal,
+            elapsedInSeconds,
+            result.stepCount,
+            result.cellsVisited,
         )
     )
 

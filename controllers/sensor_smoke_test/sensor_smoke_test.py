@@ -22,7 +22,14 @@ from controller import Robot
 LEFT_MOTOR_NAME = "left wheel motor"
 RIGHT_MOTOR_NAME = "right wheel motor"
 PROXIMITY_SENSOR_NAMES = (
-    "ps0", "ps1", "ps2", "ps3", "ps4", "ps5", "ps6", "ps7",
+    "ps0",
+    "ps1",
+    "ps2",
+    "ps3",
+    "ps4",
+    "ps5",
+    "ps6",
+    "ps7",
 )
 LIDAR_DEVICE_NAME = "lidar"
 
@@ -81,8 +88,7 @@ def formatProximityReport(proximitySensors):
     :return: printable string of name and value pairs.
     """
     readings = []
-    for sensorName, sensor in zip(PROXIMITY_SENSOR_NAMES,
-                                  proximitySensors):
+    for sensorName, sensor in zip(PROXIMITY_SENSOR_NAMES, proximitySensors):
         readings.append("%s=%4.0f" % (sensorName, sensor.getValue()))
     return "PROX  " + "  ".join(readings)
 
@@ -112,14 +118,21 @@ def formatLidarReport(lidar):
     cardinals = []
     for index in (quarter, 2 * quarter, 3 * quarter):
         cardinals.append("r%d=%.3f" % (index, scan[index]))
-    blindIndices = [index for index, value in enumerate(scan)
-                    if value < SELF_RETURN_THRESHOLD_IN_METRES]
+    blindIndices = [
+        index
+        for index, value in enumerate(scan)
+        if value < SELF_RETURN_THRESHOLD_IN_METRES
+    ]
     cardinals.append("selfHits=%d" % len(blindIndices))
-    return ("LIDAR %d/%d finite  min=%.4f m at ray %d  max=%.3f m"
-            "  mean=%.3f m  %s"
-            % (len(finiteRanges), len(scan), min(finiteRanges),
-               nearestIndex, max(finiteRanges), meanRange,
-               "  ".join(cardinals)))
+    return "LIDAR %d/%d finite  min=%.4f m at ray %d  max=%.3f m  mean=%.3f m  %s" % (
+        len(finiteRanges),
+        len(scan),
+        min(finiteRanges),
+        nearestIndex,
+        max(finiteRanges),
+        meanRange,
+        "  ".join(cardinals),
+    )
 
 
 def printConfiguration(samplingPeriodInMs, lidar):
@@ -131,11 +144,14 @@ def printConfiguration(samplingPeriodInMs, lidar):
     """
     print("SMOKE TEST: temporary validation code, not assessed.")
     print("SMOKE TEST: sampling period %d ms." % samplingPeriodInMs)
-    print("SMOKE TEST: lidar %d rays x %d layer(s), fov %.4f rad."
-          % (lidar.getHorizontalResolution(),
-             lidar.getNumberOfLayers(), lidar.getFov()))
-    print("SMOKE TEST: lidar range %.3f m to %.3f m."
-          % (lidar.getMinRange(), lidar.getMaxRange()))
+    print(
+        "SMOKE TEST: lidar %d rays x %d layer(s), fov %.4f rad."
+        % (lidar.getHorizontalResolution(), lidar.getNumberOfLayers(), lidar.getFov())
+    )
+    print(
+        "SMOKE TEST: lidar range %.3f m to %.3f m."
+        % (lidar.getMinRange(), lidar.getMaxRange())
+    )
 
 
 def runSmokeTest():
@@ -146,8 +162,7 @@ def runSmokeTest():
     robot = Robot()
     samplingPeriodInMs = int(robot.getBasicTimeStep())
     leftMotor, rightMotor = initialiseMotors(robot)
-    proximitySensors = initialiseProximitySensors(robot,
-                                                  samplingPeriodInMs)
+    proximitySensors = initialiseProximitySensors(robot, samplingPeriodInMs)
     lidar = initialiseLidar(robot, samplingPeriodInMs)
     printConfiguration(samplingPeriodInMs, lidar)
 
@@ -158,11 +173,11 @@ def runSmokeTest():
     nextReportInSeconds = 0.0
     while robot.step(samplingPeriodInMs) != -1:
         if elapsedInSeconds >= nextReportInSeconds:
-            print("t=%.2f s  %s"
-                  % (elapsedInSeconds,
-                     formatProximityReport(proximitySensors)))
-            print("t=%.2f s  %s"
-                  % (elapsedInSeconds, formatLidarReport(lidar)))
+            print(
+                "t=%.2f s  %s"
+                % (elapsedInSeconds, formatProximityReport(proximitySensors))
+            )
+            print("t=%.2f s  %s" % (elapsedInSeconds, formatLidarReport(lidar)))
             nextReportInSeconds += REPORT_INTERVAL_IN_SECONDS
         elapsedInSeconds += samplingPeriodInMs / 1000.0
         if elapsedInSeconds >= DRIVE_DURATION_IN_SECONDS:
@@ -171,10 +186,8 @@ def runSmokeTest():
     leftMotor.setVelocity(0.0)
     rightMotor.setVelocity(0.0)
     robot.step(samplingPeriodInMs)
-    print("t=%.2f s  %s"
-          % (elapsedInSeconds, formatProximityReport(proximitySensors)))
-    print("t=%.2f s  %s"
-          % (elapsedInSeconds, formatLidarReport(lidar)))
+    print("t=%.2f s  %s" % (elapsedInSeconds, formatProximityReport(proximitySensors)))
+    print("t=%.2f s  %s" % (elapsedInSeconds, formatLidarReport(lidar)))
     print("SMOKE TEST: complete, robot stopped, no faults raised.")
 
 
