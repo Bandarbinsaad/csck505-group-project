@@ -1,0 +1,363 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/gctronic/e-puck/protos/E-puck.proto"
+
+WorldInfo {
+  info [
+    "CSCK505 end-of-module assignment: 5 x 5 maze."
+    "Geometry is defined by maze.py; keep the two in step."
+    "Boundary wall inner faces are flush at x, y = +/-0.625."
+  ]
+  title "CSCK505 Maze"
+  basicTimeStep 32
+  coordinateSystem "ENU"
+}
+Viewpoint {
+  orientation -0.5773502691896258 0.5773502691896258 0.5773502691896258 2.0943951023931953
+  position -2.0213608564745298e-16 -1.0106804282372649e-16 5.51034
+}
+Background {
+  skyColor [
+    0.15 0.18 0.22
+  ]
+}
+DirectionalLight {
+  ambientIntensity 0.85
+  intensity 1.4
+}
+DirectionalLight {
+  ambientIntensity 0.4
+  direction 0.6 -0.6 -1
+  intensity 0.9
+}
+Solid {
+  translation 0 0 -0.005
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.85 0.85 0.85
+        }
+      }
+      geometry Box {
+        size 1.25 1.25 0.01
+      }
+    }
+  ]
+  name "floor"
+  boundingObject Box {
+    size 1.25 1.25 0.01
+  }
+}
+Solid {
+  translation 0 0.635 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.55 0.55 0.58
+        }
+      }
+      geometry Box {
+        size 1.29 0.02 0.1
+      }
+    }
+  ]
+  name "boundaryWallNorth"
+  boundingObject Box {
+    size 1.29 0.02 0.1
+  }
+}
+Solid {
+  translation 0 -0.635 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.55 0.55 0.58
+        }
+      }
+      geometry Box {
+        size 1.29 0.02 0.1
+      }
+    }
+  ]
+  name "boundaryWallSouth"
+  boundingObject Box {
+    size 1.29 0.02 0.1
+  }
+}
+Solid {
+  translation 0.635 0 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.55 0.55 0.58
+        }
+      }
+      geometry Box {
+        size 0.02 1.25 0.1
+      }
+    }
+  ]
+  name "boundaryWallEast"
+  boundingObject Box {
+    size 0.02 1.25 0.1
+  }
+}
+Solid {
+  translation -0.635 0 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.55 0.55 0.58
+        }
+      }
+      geometry Box {
+        size 0.02 1.25 0.1
+      }
+    }
+  ]
+  name "boundaryWallWest"
+  boundingObject Box {
+    size 0.02 1.25 0.1
+  }
+}
+Solid {
+  translation 0.5 0.5 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.3 0.36 0.46
+        }
+      }
+      geometry Box {
+        size 0.25 0.25 0.1
+      }
+    }
+  ]
+  name "wallBlockR0C4"
+  boundingObject Box {
+    size 0.25 0.25 0.1
+  }
+}
+Solid {
+  translation -0.5 0.25 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.3 0.36 0.46
+        }
+      }
+      geometry Box {
+        size 0.25 0.25 0.1
+      }
+    }
+  ]
+  name "wallBlockR1C0"
+  boundingObject Box {
+    size 0.25 0.25 0.1
+  }
+}
+Solid {
+  translation -0.25 0.25 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.3 0.36 0.46
+        }
+      }
+      geometry Box {
+        size 0.25 0.25 0.1
+      }
+    }
+  ]
+  name "wallBlockR1C1"
+  boundingObject Box {
+    size 0.25 0.25 0.1
+  }
+}
+Solid {
+  translation 0 0.25 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.3 0.36 0.46
+        }
+      }
+      geometry Box {
+        size 0.25 0.25 0.1
+      }
+    }
+  ]
+  name "wallBlockR1C2"
+  boundingObject Box {
+    size 0.25 0.25 0.1
+  }
+}
+Solid {
+  translation 0.5 0.25 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.3 0.36 0.46
+        }
+      }
+      geometry Box {
+        size 0.25 0.25 0.1
+      }
+    }
+  ]
+  name "wallBlockR1C4"
+  boundingObject Box {
+    size 0.25 0.25 0.1
+  }
+}
+Solid {
+  translation 0.5 0 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.3 0.36 0.46
+        }
+      }
+      geometry Box {
+        size 0.25 0.25 0.1
+      }
+    }
+  ]
+  name "wallBlockR2C4"
+  boundingObject Box {
+    size 0.25 0.25 0.1
+  }
+}
+Solid {
+  translation -0.25 -0.25 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.3 0.36 0.46
+        }
+      }
+      geometry Box {
+        size 0.25 0.25 0.1
+      }
+    }
+  ]
+  name "wallBlockR3C1"
+  boundingObject Box {
+    size 0.25 0.25 0.1
+  }
+}
+Solid {
+  translation 0 -0.25 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.3 0.36 0.46
+        }
+      }
+      geometry Box {
+        size 0.25 0.25 0.1
+      }
+    }
+  ]
+  name "wallBlockR3C2"
+  boundingObject Box {
+    size 0.25 0.25 0.1
+  }
+}
+Solid {
+  translation 0.25 -0.5 0.05
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.3 0.36 0.46
+        }
+      }
+      geometry Box {
+        size 0.25 0.25 0.1
+      }
+    }
+  ]
+  name "wallBlockR4C3"
+  boundingObject Box {
+    size 0.25 0.25 0.1
+  }
+}
+Solid {
+  translation -0.5 0.5 0.001
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.1 0.7 0.2
+        }
+      }
+      geometry Box {
+        size 0.2 0.2 0.002
+      }
+    }
+  ]
+  name "startMarker"
+}
+Solid {
+  translation 0.5 -0.5 0.001
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.85 0.12 0.12
+        }
+      }
+      geometry Box {
+        size 0.2 0.2 0.002
+      }
+    }
+  ]
+  name "finishMarker"
+}
+E-puck {
+  translation -0.5 0.5 0
+  rotation 0 0 1 0
+  controller "sensor_smoke_test"
+  turretSlot [
+    Lidar {
+      translation 0 0 0.02
+      name "lidar"
+      children [
+        Pose {
+          translation 0 0 -0.009
+          children [
+            Shape {
+              appearance Appearance {
+                material Material {
+                  diffuseColor 0.95 0.45 0.1
+                }
+              }
+              geometry Box {
+                size 0.022 0.022 0.012
+              }
+            }
+          ]
+        }
+      ]
+      horizontalResolution 180
+      fieldOfView 6.283185
+      numberOfLayers 1
+      minRange 0.02
+      maxRange 2
+    }
+  ]
+}
