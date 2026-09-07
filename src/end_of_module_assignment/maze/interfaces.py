@@ -35,3 +35,30 @@ class RobotDriver(Protocol):
     def moveForward(self) -> None:
         """Drive forward exactly one grid cell."""
         ...
+
+
+@runtime_checkable
+class ProbeRobotDriver(Protocol):
+    """A driver that discovers walls by attempting moves (IR probing).
+
+    Used where the sensor cannot see a wall a full cell away, so the robot
+    tries to move and reports whether the cell ahead was open.
+    """
+
+    @property
+    def heading(self) -> Heading: ...
+
+    @property
+    def cell(self) -> Cell: ...
+
+    def turnTo(self, targetHeading: Heading) -> None:
+        """Rotate in place to face the given heading."""
+        ...
+
+    def tryMoveForward(self) -> bool:
+        """Attempt to advance one cell.
+
+        @return True if the robot advanced, False if a wall blocked it
+            (the robot stays on its current cell).
+        """
+        ...

@@ -48,6 +48,7 @@ class EpuckRobot(Robot):
         self._cell = startCell
         self._heading = startHeading
         self._samplingPeriodInMs = samplingPeriodInMs
+        self._isFrontBlocked = None  # optional () -> bool front bump probe
 
     def initialiseDevices(self) -> None:
         """Retrieve motors and encoders and take one settling step."""
@@ -159,3 +160,61 @@ class EpuckRobot(Robot):
         self._driveWheelRotation(targetRotationInRadians, clockwise=None)
         rowDelta, columnDelta = self._heading.offset
         self._cell = (self._cell[0] + rowDelta, self._cell[1] + columnDelta)
+
+    def attachFrontProbe(self, isFrontBlockedFn) -> None:
+        """Attach a front-bump test used by tryMoveForward (IR probing).
+
+        @param isFrontBlockedFn a callable returning True when an obstacle
+            is close ahead.
+        """
+        self._isFrontBlocked = isFrontBlockedFn
+
+    def _reverseToStart(self, startLeft: float, startRight: float) -> None:
+        """Reverse until the wheels return near their starting angles.
+
+        @param startLeft the left encoder value before the aborted move.
+        @param startRight the right encoder value before the aborted move.
+        """
+        self._setWheelSpeeds(-CRUISE_FRACTION, -CRUISE_FRACTION)
+        while self.step(self._samplingPeriodInMs) != -1:
+            leftDelta = abs(self._leftEncoder.getValue() - startLeft)
+            rightDelta = abs(self._rightEncoder.getValue() - startRight)
+            if (leftDelta + rightDelta) / 2.0 <= 0.05:
+                break
+        self._setWheelSpeeds(0.0, 0.0)
+        self.step(self._samplingPeriodInMs)
+
+    def tryMoveForward(self) -> bool:
+        """Drive forward one cell, aborting if the front bump fires.
+
+        Used for short-range IR probing: if an obstacle is detected close
+        ahead before a full cell is covered, stop, reverse to the starting
+        pose, and report the direction as blocked (the cell is unchanged).
+
+        @return True if a full cell was covered, False if blocked.
+        """
+        targetRotationInRadians = (
+            self._cellDistanceInMetres / WHEEL_RADIUS_IN_METRES
+        )
+        startLeft = self._leftEncoder.getValue()
+        startRight = self._rightEncoder.getValue()
+        self._setWheelSpeeds(CRUISE_FRACTION, CRUISE_FRACTION)
+
+        blocked = False
+        while self.step(self._samplingPeriodInMs) != -1:
+            if self._isFrontBlocked is not None and self._isFrontBlocked():
+                blocked = True
+                break
+            leftDelta = abs(self._leftEncoder.getValue() - startLeft)
+            rightDelta = abs(self._rightEncoder.getValue() - startRight)
+            if (leftDelta + rightDelta) / 2.0 >= targetRotationInRadians:
+                break
+        self._setWheelSpeeds(0.0, 0.0)
+        self.step(self._samplingPeriodInMs)
+
+        if blocked:
+            self._reverseToStart(startLeft, startRight)
+            return False
+        rowDelta, columnDelta = self._heading.offset
+        self._cell = (self._cell[0] + rowDelta, self._cell[1] + columnDelta)
+        return True

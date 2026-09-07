@@ -1,16 +1,20 @@
-"""Micromouse controller: reactive priority exploration + map building.
+"""Micromouse controller: reactive exploration + map building.
 
-Set SENSOR_NAME to "proximity" (Experiment 1) or "lidar" (Experiment 2).
-All other logic is identical between runs. The maze, start and finish come
-from the group's maze.py (single source of truth). Reload the world before
-each run.
+Two experiments, selected by SENSOR_NAME:
+  "lidar"     - Experiment 2: a 360 deg range scan senses all four sides
+                from the cell centre, driving the priority-rule explorer.
+  "proximity" - Experiment 1: short-range IR cannot see a wall a full cell
+                away, so the robot probes - it tries to move and treats a
+                front bump as a wall (the wall-following / probe-and-map
+                explorer). Only bumped walls are mapped, so its map is
+                sparser than the lidar's - the intended sensor contrast.
+
+The maze, start and finish come from the group's maze.py (single source of
+truth). Reload the world before each run.
 
 Calibration note: the e-puck accumulates lateral odometry drift, so a wall
-one cell away is read at 0.12-0.21 m rather than the nominal 0.125 m. The
-lidar threshold sits in the measured gap between "wall present" (<= ~0.21 m)
-and "cell open" (>= ~0.29 m). Proximity (IR) cannot see a wall a full cell
-away at all (see the report / smoke-test evidence); Experiment 1 is included
-to demonstrate that sensor limitation.
+one cell away is read at 0.12-0.21 m rather than the nominal 0.125 m; the
+lidar threshold sits in the measured gap to "cell open" (>= ~0.29 m).
 """
 from __future__ import annotations
 
@@ -31,58 +35,89 @@ from sensing import LidarWallSensor, ProximitySensorArray  # noqa: E402
 
 from end_of_module_assignment.maze.explorer import explore  # noqa: E402
 from end_of_module_assignment.maze.mapper import Map  # noqa: E402
+from end_of_module_assignment.maze.prober import exploreByProbing  # noqa: E402
 from end_of_module_assignment.maze.types import Heading  # noqa: E402
 
 SENSOR_NAME = "lidar"  # "proximity" | "lidar"
-START_HEADING = Heading.E           # e-puck starts facing east
-PROXIMITY_WALL_THRESHOLD = 200.0    # calibrate (IR rises as a wall nears)
+START_HEADING = Heading.E              # e-puck starts facing east
+PROXIMITY_WALL_THRESHOLD = 200.0       # IR rises as a wall nears
+PROXIMITY_PROBE_CONTACT = 200.0        # front IR bump level - CALIBRATE
 LIDAR_WALL_THRESHOLD_IN_METRES = 0.22  # calibrated to the drift-widened gap
 MAX_STEP_COUNT = 200
-WARM_UP_STEP_COUNT = 3              # sensors need a step after enable
+WARM_UP_STEP_COUNT = 3                 # sensors need a step after enable
 
 
-def buildSensor(robot, samplingPeriodInMs):
-    """Construct the wall sensor named by SENSOR_NAME.
+def warmUp(robot, samplingPeriodInMs):
+    """Step a few times so newly enabled sensors return valid data.
 
-    @param robot the EpuckRobot owning the devices.
+    @param robot the EpuckRobot.
     @param samplingPeriodInMs sampling period in milliseconds.
-    @return a WallSensor.
     """
-    if SENSOR_NAME == "lidar":
-        return LidarWallSensor(
-            robot, samplingPeriodInMs, LIDAR_WALL_THRESHOLD_IN_METRES
-        )
-    return ProximitySensorArray(
+    for _ in range(WARM_UP_STEP_COUNT):
+        robot.step(samplingPeriodInMs)
+
+
+def runLidar(robot, samplingPeriodInMs, grid, goalCell):
+    """Experiment 2: explore with the lidar wall sensor.
+
+    @param robot the EpuckRobot.
+    @param samplingPeriodInMs sampling period in milliseconds.
+    @param grid the map to populate.
+    @param goalCell the finish (row, column).
+    @return the ExploreResult.
+    """
+    sensor = LidarWallSensor(
+        robot, samplingPeriodInMs, LIDAR_WALL_THRESHOLD_IN_METRES
+    )
+    warmUp(robot, samplingPeriodInMs)
+    return explore(robot, sensor, grid, goalCell, maxStepCount=MAX_STEP_COUNT)
+
+
+def runProximity(robot, samplingPeriodInMs, grid, goalCell):
+    """Experiment 1: explore by IR probing (front-bump wall following).
+
+    NOTE: the IR probe is pose-fragile. Each blocked probe noses toward a
+    wall and reverses, and turns add error, so the estimated pose drifts;
+    PROXIMITY_PROBE_CONTACT trades false bumps (too low) against driving
+    through walls (too high). Reliable IR mapping needs per-cell
+    re-centring / heading correction - tune this interactively in Webots.
+    This demonstrates the core limitation being compared against the lidar.
+
+    @param robot the EpuckRobot.
+    @param samplingPeriodInMs sampling period in milliseconds.
+    @param grid the map to populate.
+    @param goalCell the finish (row, column).
+    @return the ExploreResult.
+    """
+    proximity = ProximitySensorArray(
         robot, samplingPeriodInMs, PROXIMITY_WALL_THRESHOLD
+    )
+    warmUp(robot, samplingPeriodInMs)
+    robot.attachFrontProbe(
+        lambda: proximity.frontValue() >= PROXIMITY_PROBE_CONTACT
+    )
+    return exploreByProbing(
+        robot, grid, goalCell, maxStepCount=MAX_STEP_COUNT
     )
 
 
 def main():
     """Run one exploration, print the map, and dump the map files."""
-    startCell = maze.startCell()
-    goalCell = maze.finishCell()
-
     robot = EpuckRobot(
         cellDistanceInMetres=maze.CELL_SIZE,
-        startCell=startCell,
+        startCell=maze.startCell(),
         startHeading=START_HEADING,
     )
     robot.initialiseDevices()
     samplingPeriodInMs = int(robot.getBasicTimeStep())
-
-    sensor = buildSensor(robot, samplingPeriodInMs)
-
-    # Sensor data is only valid after at least one simulation step following
-    # enable(); the lidar's getRangeImage() crashes if read before then.
-    for _ in range(WARM_UP_STEP_COUNT):
-        robot.step(samplingPeriodInMs)
-
+    goalCell = maze.finishCell()
     grid = Map(maze.ROW_COUNT, maze.COLUMN_COUNT)
 
     startTimeInSeconds = robot.getTime()
-    result = explore(
-        robot, sensor, grid, goalCell, maxStepCount=MAX_STEP_COUNT
-    )
+    if SENSOR_NAME == "proximity":
+        result = runProximity(robot, samplingPeriodInMs, grid, goalCell)
+    else:
+        result = runLidar(robot, samplingPeriodInMs, grid, goalCell)
     elapsedInSeconds = robot.getTime() - startTimeInSeconds
 
     grid.dump(

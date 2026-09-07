@@ -45,6 +45,16 @@ class ProximitySensorArray:
         values = [sensor.getValue() for sensor in self._sensors]
         return proximityToSides(values, self._wallThreshold)
 
+    def frontValue(self) -> float:
+        """Return the strongest of the two front IR readings (ps0, ps7).
+
+        Rises as an obstacle nears; used as the front-bump probe for the
+        IR wall-following explorer.
+
+        @return the larger of the ps0 and ps7 proximity values.
+        """
+        return max(self._sensors[0].getValue(), self._sensors[7].getValue())
+
 
 class LidarWallSensor:
     """The 360-degree LiDAR reduced to four cardinal wall booleans."""

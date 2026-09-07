@@ -67,6 +67,21 @@ class FakeRobot:
         if not self._maze.isWall(target):
             self._cell = target
 
+    def tryMoveForward(self) -> bool:
+        """Attempt to advance one cell, reporting whether it was open.
+
+        Models the IR probe-and-bump behaviour: advance if the cell ahead
+        is free, otherwise stay put (as if the front bump stopped the move).
+
+        @return True if the robot advanced, False if a wall blocked it.
+        """
+        rowDelta, columnDelta = self._heading.offset
+        target = (self._cell[0] + rowDelta, self._cell[1] + columnDelta)
+        if self._maze.isWall(target):
+            return False
+        self._cell = target
+        return True
+
 
 class FakeSensor:
     """A WallSensor double reading the maze around the robot."""
