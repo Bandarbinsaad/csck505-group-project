@@ -23,6 +23,7 @@ TURN_TOLERANCE_IN_DEGREES = 2.0
 HEADING_HOLD_GAIN_PER_DEGREE = 0.02    # wheel-speed fraction per degree error
 MAX_HEADING_CORRECTION = 0.3
 REVERSE_SETTLE_IN_RADIANS = 0.05
+MAX_MANOEUVRE_STEPS = 400          # safety cap so a jam cannot hang a run
 LEFT_MOTOR_NAME = "left wheel motor"
 RIGHT_MOTOR_NAME = "right wheel motor"
 LEFT_ENCODER_NAME = "left wheel sensor"
@@ -138,11 +139,15 @@ class EpuckRobot(Robot):
         )
         previousYaw = self._yawInDegrees()
         turned = 0.0
+        guard = 0
         while self.step(self._samplingPeriodInMs) != -1:
             currentYaw = self._yawInDegrees()
             turned += abs(self._shortestDeltaInDegrees(currentYaw, previousYaw))
             previousYaw = currentYaw
+            guard += 1
             if turned >= remaining - TURN_TOLERANCE_IN_DEGREES:
+                break
+            if guard >= MAX_MANOEUVRE_STEPS:
                 break
         self._setWheelSpeeds(0.0, 0.0)
         self.step(self._samplingPeriodInMs)
@@ -175,6 +180,7 @@ class EpuckRobot(Robot):
         startRight = self._rightEncoder.getValue()
         headingYaw = self._yawInDegrees()
         blocked = False
+        guard = 0
         while self.step(self._samplingPeriodInMs) != -1:
             if isBlockedFn is not None and isBlockedFn():
                 blocked = True
@@ -182,6 +188,9 @@ class EpuckRobot(Robot):
             leftDelta = abs(self._leftEncoder.getValue() - startLeft)
             rightDelta = abs(self._rightEncoder.getValue() - startRight)
             if (leftDelta + rightDelta) / 2.0 >= targetRotationInRadians:
+                break
+            guard += 1
+            if guard >= MAX_MANOEUVRE_STEPS:
                 break
             error = self._shortestDeltaInDegrees(
                 self._yawInDegrees(), headingYaw
@@ -215,10 +224,14 @@ class EpuckRobot(Robot):
         @param startRight the right encoder value before the aborted move.
         """
         self._setWheelSpeeds(-CRUISE_FRACTION, -CRUISE_FRACTION)
+        guard = 0
         while self.step(self._samplingPeriodInMs) != -1:
             leftDelta = abs(self._leftEncoder.getValue() - startLeft)
             rightDelta = abs(self._rightEncoder.getValue() - startRight)
             if (leftDelta + rightDelta) / 2.0 <= REVERSE_SETTLE_IN_RADIANS:
+                break
+            guard += 1
+            if guard >= MAX_MANOEUVRE_STEPS:
                 break
         self._setWheelSpeeds(0.0, 0.0)
         self.step(self._samplingPeriodInMs)

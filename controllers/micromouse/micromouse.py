@@ -29,7 +29,13 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_REPO_ROOT / "src"))
 sys.path.insert(0, str(_REPO_ROOT))
 
-import maze  # noqa: E402  (repo-root single source of truth)
+import importlib  # noqa: E402
+
+# The maze module is chosen by the robot's Webots controllerArgs (e.g.
+# "maze_complex"); it defaults to "maze". Both are single sources of truth.
+_MAZE_MODULE_NAME = sys.argv[1] if len(sys.argv) > 1 else "maze"
+maze = importlib.import_module(_MAZE_MODULE_NAME)
+
 from robot import EpuckRobot  # noqa: E402
 from sensing import LidarWallSensor, ProximitySensorArray  # noqa: E402
 
