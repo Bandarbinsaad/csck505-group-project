@@ -1,13 +1,8 @@
-"""Complex 8 x 8 maze for stress-testing the CSCK505 robots.
+"""Complex 8 x 8 maze for stress-testing the robots.
 
-Same API and conventions as maze.py, at a larger size: a long serpentine
-route with an engineered dead-end trap, so the reactive robot must turn
-many times and backtrack. worlds/maze_world_complex.wbt is generated from
-these values; if either is edited, regenerate the world to match.
-
-Grid convention (as maze.py): zero-based (row, column) from the top-left;
-row increases southwards (decreasing world y), column increases eastwards
-(increasing world x). Symbols: S start, F finish, . free, # wall block.
+Same API and conventions as maze: a longer serpentine route with a dead-end
+trap, so the reactive robot must turn many times and backtrack. The geometry
+must stay in step with worlds/maze_world_complex.wbt.
 """
 
 MAZE = [

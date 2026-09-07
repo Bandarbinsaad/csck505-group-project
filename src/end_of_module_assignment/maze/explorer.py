@@ -53,7 +53,7 @@ def _openUnvisitedHeading(
     """
     for action in _PRIORITY:
         if getattr(walls, _SIDE_FIELD[action]):
-            continue  # wall on that side
+            continue
         candidate = action.toHeading(heading)
         rowDelta, columnDelta = candidate.offset
         neighbour = (cell[0] + rowDelta, cell[1] + columnDelta)

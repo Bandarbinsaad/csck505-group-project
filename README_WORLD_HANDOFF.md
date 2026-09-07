@@ -2,7 +2,7 @@
 This folder contains the 5 × 5 Webots world for the CSCK505 group project. It was built and tested in Webots R2025a using a 32 ms basic time step.
 ## Files
 - `worlds/maze_world.wbt` — Webots world
-- `maze.py` — maze matrix and coordinate helpers
+- `src/end_of_module_assignment/layouts/maze.py` — maze matrix and coordinate helpers
 - `controllers/sensor_smoke_test/sensor_smoke_test.py` — temporary sensor test
 - `evidence/` — screenshots and smoke-test output
 The smoke test is diagnostic only. It does not contain the assessed navigation, mapping, finish detection or competition timing.

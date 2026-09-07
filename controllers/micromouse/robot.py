@@ -18,10 +18,10 @@ from end_of_module_assignment.maze.types import Cell, Heading
 WHEEL_RADIUS_IN_METRES = 0.02          # e-puck proto wheel cylinder radius
 MAX_WHEEL_SPEED_IN_RADIANS_PER_SECOND = 6.28
 CRUISE_FRACTION = 0.5
-TURN_FRACTION = 0.3                 # coarse spin speed
-TURN_FINE_FRACTION = 0.05          # slow approach near the target angle
-TURN_SLOW_ZONE_IN_DEGREES = 12.0   # switch to fine speed within this of target
-TURN_TOLERANCE_IN_DEGREES = 0.5    # stop within this of the target angle
+TURN_FRACTION = 0.3
+TURN_FINE_FRACTION = 0.05
+TURN_SLOW_ZONE_IN_DEGREES = 12.0
+TURN_TOLERANCE_IN_DEGREES = 0.5
 HEADING_HOLD_GAIN_PER_DEGREE = 0.02    # wheel-speed fraction per degree error
 MAX_HEADING_CORRECTION = 0.3
 REVERSE_SETTLE_IN_RADIANS = 0.05
