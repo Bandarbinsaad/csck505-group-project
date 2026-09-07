@@ -84,3 +84,18 @@ class Sides(NamedTuple):
     left: bool
     right: bool
     back: bool
+
+
+def headingBetween(fromCell: Cell, toCell: Cell) -> Heading:
+    """Return the heading that steps from one cell to an adjacent one.
+
+    @param fromCell the (row, column) to leave.
+    @param toCell an orthogonally adjacent (row, column).
+    @return the Heading whose one-cell step goes fromCell to toCell.
+    @raises ValueError: if the cells are not orthogonally adjacent.
+    """
+    delta = (toCell[0] - fromCell[0], toCell[1] - fromCell[1])
+    for heading in Heading:
+        if heading.offset == delta:
+            return heading
+    raise ValueError("cells %r and %r are not adjacent" % (fromCell, toCell))

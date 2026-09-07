@@ -18,8 +18,10 @@ from end_of_module_assignment.maze.types import Cell, Heading
 WHEEL_RADIUS_IN_METRES = 0.02          # e-puck proto wheel cylinder radius
 MAX_WHEEL_SPEED_IN_RADIANS_PER_SECOND = 6.28
 CRUISE_FRACTION = 0.5
-TURN_FRACTION = 0.25
-TURN_TOLERANCE_IN_DEGREES = 2.0
+TURN_FRACTION = 0.3                 # coarse spin speed
+TURN_FINE_FRACTION = 0.05          # slow approach near the target angle
+TURN_SLOW_ZONE_IN_DEGREES = 12.0   # switch to fine speed within this of target
+TURN_TOLERANCE_IN_DEGREES = 0.5    # stop within this of the target angle
 HEADING_HOLD_GAIN_PER_DEGREE = 0.02    # wheel-speed fraction per degree error
 MAX_HEADING_CORRECTION = 0.3
 REVERSE_SETTLE_IN_RADIANS = 0.05
@@ -52,6 +54,8 @@ class EpuckRobot(Robot):
         self._cellDistanceInMetres = cellDistanceInMetres
         self._cell = startCell
         self._heading = startHeading
+        self._startHeading = startHeading
+        self._referenceYaw = 0.0  # IMU yaw when facing startHeading
         self._samplingPeriodInMs = samplingPeriodInMs
         self._isFrontBlocked = None  # optional () -> bool front bump probe
 
@@ -69,6 +73,7 @@ class EpuckRobot(Robot):
         self._inertialUnit = self.getDevice(INERTIAL_UNIT_NAME)
         self._inertialUnit.enable(self._samplingPeriodInMs)
         self.step(self._samplingPeriodInMs)  # first readings become valid
+        self._referenceYaw = self._yawInDegrees()  # yaw of startHeading
 
     @property
     def heading(self) -> Heading:
@@ -123,46 +128,53 @@ class EpuckRobot(Robot):
         """
         return (first - second + 180.0) % 360.0 - 180.0
 
-    def _rotate(self, angleInDegrees: float) -> None:
-        """Spin in place until the measured yaw change reaches the target.
+    def _absoluteYawFor(self, heading: Heading) -> float:
+        """Return the IMU yaw (degrees) at which the robot faces a heading.
 
-        Closed-loop on the IMU, so wheel-radius error and slip do not affect
-        the result. Positive is clockwise (a right turn).
+        Cardinals are 90 degrees apart from the reference yaw captured at
+        startup; turning left (anticlockwise) increases yaw in ENU.
 
-        @param angleInDegrees the turn magnitude and direction.
+        @param heading the heading to face.
+        @return the absolute target yaw in degrees.
         """
-        remaining = abs(angleInDegrees)
-        clockwise = angleInDegrees > 0
-        self._setWheelSpeeds(
-            TURN_FRACTION if clockwise else -TURN_FRACTION,
-            -TURN_FRACTION if clockwise else TURN_FRACTION,
-        )
-        previousYaw = self._yawInDegrees()
-        turned = 0.0
-        guard = 0
-        while self.step(self._samplingPeriodInMs) != -1:
-            currentYaw = self._yawInDegrees()
-            turned += abs(self._shortestDeltaInDegrees(currentYaw, previousYaw))
-            previousYaw = currentYaw
-            guard += 1
-            if turned >= remaining - TURN_TOLERANCE_IN_DEGREES:
-                break
-            if guard >= MAX_MANOEUVRE_STEPS:
-                break
-        self._setWheelSpeeds(0.0, 0.0)
-        self.step(self._samplingPeriodInMs)
+        anticlockwiseSteps = 0
+        current = self._startHeading
+        while current != heading and anticlockwiseSteps < 4:
+            current = current.turnLeft()
+            anticlockwiseSteps += 1
+        return self._referenceYaw + 90.0 * anticlockwiseSteps
 
     def turnTo(self, targetHeading: Heading) -> None:
-        """Rotate in place to face a heading and update the pose.
+        """Rotate to the absolute yaw of a heading, correcting any drift.
+
+        Closed-loop on the IMU and referenced to an absolute cardinal, so
+        turn errors do not accumulate across the run.
 
         @param targetHeading the heading to adopt.
         """
-        if targetHeading == self._heading.turnRight():
-            self._rotate(90.0)
-        elif targetHeading == self._heading.turnLeft():
-            self._rotate(-90.0)
-        elif targetHeading != self._heading:
-            self._rotate(180.0)
+        targetYaw = self._absoluteYawFor(targetHeading)
+        guard = 0
+        while self.step(self._samplingPeriodInMs) != -1:
+            error = self._shortestDeltaInDegrees(
+                targetYaw, self._yawInDegrees()
+            )
+            if abs(error) <= TURN_TOLERANCE_IN_DEGREES:
+                break
+            guard += 1
+            if guard >= MAX_MANOEUVRE_STEPS:
+                break
+            speed = (
+                TURN_FRACTION
+                if abs(error) > TURN_SLOW_ZONE_IN_DEGREES
+                else TURN_FINE_FRACTION
+            )
+            # error > 0 means we must increase yaw: turn anticlockwise (left).
+            if error > 0:
+                self._setWheelSpeeds(-speed, speed)
+            else:
+                self._setWheelSpeeds(speed, -speed)
+        self._setWheelSpeeds(0.0, 0.0)
+        self.step(self._samplingPeriodInMs)
         self._heading = targetHeading
 
     def _driveOneCell(self, isBlockedFn):
