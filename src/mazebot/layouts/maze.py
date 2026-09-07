@@ -110,7 +110,7 @@ def findSymbol(symbol):
         for column in range(COLUMN_COUNT):
             if symbolAt(row, column) == symbol:
                 return row, column
-    raise ValueError("symbol %r not present in MAZE" % symbol)
+    raise ValueError(f"symbol {symbol!r} not present in MAZE")
 
 
 def startCell():

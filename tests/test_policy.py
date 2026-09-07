@@ -15,7 +15,10 @@ def testPrefersStraightWhenOpenAndUnvisited():
 def testPriorityIsRightThenLeftThenBack():
     assert chooseMove(walls(front=True), NONE) is Action.RIGHT
     assert chooseMove(walls(front=True, right=True), NONE) is Action.LEFT
-    assert chooseMove(walls(front=True, right=True, left=True), NONE) is Action.BACK
+    assert (
+        chooseMove(walls(front=True, right=True, left=True), NONE)
+        is Action.BACK
+    )
 
 
 def testPrefersUnvisitedOverPriority():

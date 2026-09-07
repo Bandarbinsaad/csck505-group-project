@@ -100,7 +100,9 @@ class EpuckRobot(Robot):
         """
         self._isFrontBlocked = isFrontBlockedFn
 
-    def _setWheelSpeeds(self, leftFraction: float, rightFraction: float) -> None:
+    def _setWheelSpeeds(
+        self, leftFraction: float, rightFraction: float
+    ) -> None:
         """Command both wheels as fractions of max speed.
 
         @param leftFraction left wheel speed fraction in [-1, 1].
@@ -154,7 +156,9 @@ class EpuckRobot(Robot):
         targetYaw = self._absoluteYawFor(targetHeading)
         guard = 0
         while self.step(self._samplingPeriodInMs) != -1:
-            error = self._shortestDeltaInDegrees(targetYaw, self._yawInDegrees())
+            error = self._shortestDeltaInDegrees(
+                targetYaw, self._yawInDegrees()
+            )
             if abs(error) <= TURN_TOLERANCE_IN_DEGREES:
                 break
             guard += 1
@@ -182,7 +186,9 @@ class EpuckRobot(Robot):
         @return a tuple (startLeft, startRight, blocked) of the encoder
             values before the drive and whether it aborted.
         """
-        targetRotationInRadians = self._cellDistanceInMetres / WHEEL_RADIUS_IN_METRES
+        targetRotationInRadians = (
+            self._cellDistanceInMetres / WHEEL_RADIUS_IN_METRES
+        )
         startLeft = self._leftEncoder.getValue()
         startRight = self._rightEncoder.getValue()
         headingYaw = self._yawInDegrees()
@@ -199,10 +205,15 @@ class EpuckRobot(Robot):
             guard += 1
             if guard >= MAX_MANOEUVRE_STEPS:
                 break
-            error = self._shortestDeltaInDegrees(self._yawInDegrees(), headingYaw)
+            error = self._shortestDeltaInDegrees(
+                self._yawInDegrees(), headingYaw
+            )
             correction = max(
                 -MAX_HEADING_CORRECTION,
-                min(MAX_HEADING_CORRECTION, HEADING_HOLD_GAIN_PER_DEGREE * error),
+                min(
+                    MAX_HEADING_CORRECTION,
+                    HEADING_HOLD_GAIN_PER_DEGREE * error,
+                ),
             )
             self._setWheelSpeeds(
                 CRUISE_FRACTION + correction, CRUISE_FRACTION - correction
@@ -249,7 +260,9 @@ class EpuckRobot(Robot):
 
         @return True if a full cell was covered, False if blocked.
         """
-        startLeft, startRight, blocked = self._driveOneCell(self._isFrontBlocked)
+        startLeft, startRight, blocked = self._driveOneCell(
+            self._isFrontBlocked
+        )
         if blocked:
             self._reverseToStart(startLeft, startRight)
             return False

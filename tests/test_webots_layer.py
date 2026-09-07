@@ -2,7 +2,9 @@ import importlib
 import sys
 from pathlib import Path
 
-CONTROLLER_DIR = Path(__file__).resolve().parents[1] / "controllers" / "micromouse"
+CONTROLLER_DIR = (
+    Path(__file__).resolve().parents[1] / "controllers" / "micromouse"
+)
 sys.path.insert(0, str(CONTROLLER_DIR))
 
 from mazebot.maze.interfaces import (

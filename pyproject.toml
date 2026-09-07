@@ -25,3 +25,14 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 79
+exclude = ["controllers/sensor_smoke_test"]
+
+[tool.ruff.lint]
+select = ["E", "F", "UP", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"controllers/micromouse/micromouse.py" = ["E402"]
+"tests/test_webots_layer.py" = ["E402"]

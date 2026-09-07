@@ -28,7 +28,9 @@ LIDAR_DEVICE_NAME = "lidar"
 class ProximitySensorArray:
     """The eight e-puck IR proximity sensors, read as four sides."""
 
-    def __init__(self, robot, samplingPeriodInMs: int, wallThreshold: float) -> None:
+    def __init__(
+        self, robot, samplingPeriodInMs: int, wallThreshold: float
+    ) -> None:
         """Retrieve and enable ps0..ps7.
 
         @param robot the Webots Robot owning the devices.

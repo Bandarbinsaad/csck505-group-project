@@ -89,7 +89,9 @@ def explore(
     while cell != goalCell and stepCount < maxStepCount:
         walls = sensor.read()
         grid.markWalls(cell, robot.heading, walls)
-        forward = _openUnvisitedHeading(walls, robot.heading, cell, visitedCells)
+        forward = _openUnvisitedHeading(
+            walls, robot.heading, cell, visitedCells
+        )
         if forward is not None:
             robot.turnTo(forward)
             robot.moveForward()

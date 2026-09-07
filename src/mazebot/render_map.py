@@ -54,14 +54,15 @@ def render(jsonPath: str, pngPath: str) -> None:
     rowCount = len(matrix)
     columnCount = len(matrix[0]) if matrix else 0
 
-    figure, axes = pyplot.subplots(figsize=(columnCount * 0.5 + 1, rowCount * 0.5 + 1))
+    figure, axes = pyplot.subplots(
+        figsize=(columnCount * 0.5 + 1, rowCount * 0.5 + 1)
+    )
     axes.imshow(rgb)
     axes.set_xticks(range(columnCount))
     axes.set_yticks(range(rowCount))
-    axes.set_title(
-        "Map (%s) - time %.2f s"
-        % (data.get("sensorName", ""), data.get("timeInSeconds", 0.0))
-    )
+    sensorName = data.get("sensorName", "")
+    timeInSeconds = data.get("timeInSeconds", 0.0)
+    axes.set_title(f"Map ({sensorName}) - time {timeInSeconds:.2f} s")
     figure.savefig(pngPath, dpi=150, bbox_inches="tight")
     pyplot.close(figure)
 

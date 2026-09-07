@@ -53,7 +53,9 @@ def runLidar(robot, samplingPeriodInMs, grid, goalCell):
     @param goalCell the finish (row, column).
     @return the ExploreResult.
     """
-    sensor = LidarWallSensor(robot, samplingPeriodInMs, LIDAR_WALL_THRESHOLD_IN_METRES)
+    sensor = LidarWallSensor(
+        robot, samplingPeriodInMs, LIDAR_WALL_THRESHOLD_IN_METRES
+    )
     warmUp(robot, samplingPeriodInMs)
     return explore(robot, sensor, grid, goalCell, maxStepCount=MAX_STEP_COUNT)
 
@@ -71,7 +73,9 @@ def runProximity(robot, samplingPeriodInMs, grid, goalCell):
         robot, samplingPeriodInMs, PROXIMITY_WALL_THRESHOLD
     )
     warmUp(robot, samplingPeriodInMs)
-    robot.attachFrontProbe(lambda: proximity.frontValue() >= PROXIMITY_PROBE_CONTACT)
+    robot.attachFrontProbe(
+        lambda: proximity.frontValue() >= PROXIMITY_PROBE_CONTACT
+    )
     return exploreByProbing(robot, grid, goalCell, maxStepCount=MAX_STEP_COUNT)
 
 
@@ -103,14 +107,9 @@ def main():
     for row in grid.toMatrix():
         print(" ".join(row))
     print(
-        "sensor=%s reachedGoal=%s time=%.2fs steps=%d visited=%d"
-        % (
-            SENSOR_NAME,
-            result.reachedGoal,
-            elapsedInSeconds,
-            result.stepCount,
-            result.cellsVisited,
-        )
+        f"sensor={SENSOR_NAME} reachedGoal={result.reachedGoal} "
+        f"time={elapsedInSeconds:.2f}s steps={result.stepCount} "
+        f"visited={result.cellsVisited}"
     )
 
 

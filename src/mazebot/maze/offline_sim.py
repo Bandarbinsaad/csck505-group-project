@@ -108,7 +108,9 @@ class FakeSensor:
 
         def wall(sideHeading: Heading) -> bool:
             rowDelta, columnDelta = sideHeading.offset
-            return self._maze.isWall((cell[0] + rowDelta, cell[1] + columnDelta))
+            return self._maze.isWall(
+                (cell[0] + rowDelta, cell[1] + columnDelta)
+            )
 
         return Sides(
             front=wall(heading),

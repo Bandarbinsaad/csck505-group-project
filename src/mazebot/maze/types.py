@@ -99,4 +99,4 @@ def headingBetween(fromCell: Cell, toCell: Cell) -> Heading:
     for heading in Heading:
         if heading.offset == delta:
             return heading
-    raise ValueError("cells %r and %r are not adjacent" % (fromCell, toCell))
+    raise ValueError(f"cells {fromCell!r} and {toCell!r} are not adjacent")
