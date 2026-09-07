@@ -1,11 +1,11 @@
-"""Webots e-puck driver using wheel-encoder odometry (no GPS/IMU).
+"""Webots e-puck driver: IMU-closed-loop turns, encoder-measured distance.
 
-The world's e-puck exposes wheel motors and wheel position sensors but no
-GPS or inertial unit, so distance and turns are measured from encoder
-deltas. Heading and cell are tracked internally: each forward move steps the
-cell along the current heading; each turn updates the heading enum.
-
-Geometry constants are standard e-puck values - verify against the proto.
+The world's e-puck has wheel motors, wheel position sensors and an
+InertialUnit (added for reliable heading). Turns rotate until the measured
+yaw change reaches the target, so they are immune to wheel-radius error and
+slip. Straight moves hold the entry heading with a proportional correction,
+which removes the lateral drift that open-loop odometry accumulated. Cell
+and heading are tracked internally from the known start pose.
 """
 from __future__ import annotations
 
@@ -15,15 +15,19 @@ from controller import Robot
 
 from end_of_module_assignment.maze.types import Cell, Heading
 
-WHEEL_RADIUS_IN_METRES = 0.0205        # verify against E-puck.proto
-AXLE_LENGTH_IN_METRES = 0.052          # verify against E-puck.proto
+WHEEL_RADIUS_IN_METRES = 0.02          # e-puck proto wheel cylinder radius
 MAX_WHEEL_SPEED_IN_RADIANS_PER_SECOND = 6.28
 CRUISE_FRACTION = 0.5
-TURN_FRACTION = 0.3
+TURN_FRACTION = 0.25
+TURN_TOLERANCE_IN_DEGREES = 2.0
+HEADING_HOLD_GAIN_PER_DEGREE = 0.02    # wheel-speed fraction per degree error
+MAX_HEADING_CORRECTION = 0.3
+REVERSE_SETTLE_IN_RADIANS = 0.05
 LEFT_MOTOR_NAME = "left wheel motor"
 RIGHT_MOTOR_NAME = "right wheel motor"
 LEFT_ENCODER_NAME = "left wheel sensor"
 RIGHT_ENCODER_NAME = "right wheel sensor"
+INERTIAL_UNIT_NAME = "inertial unit"
 
 
 class EpuckRobot(Robot):
@@ -51,7 +55,7 @@ class EpuckRobot(Robot):
         self._isFrontBlocked = None  # optional () -> bool front bump probe
 
     def initialiseDevices(self) -> None:
-        """Retrieve motors and encoders and take one settling step."""
+        """Retrieve motors, encoders and the IMU, then take one step."""
         self._leftMotor = self.getDevice(LEFT_MOTOR_NAME)
         self._rightMotor = self.getDevice(RIGHT_MOTOR_NAME)
         for motor in (self._leftMotor, self._rightMotor):
@@ -61,7 +65,9 @@ class EpuckRobot(Robot):
         self._rightEncoder = self.getDevice(RIGHT_ENCODER_NAME)
         self._leftEncoder.enable(self._samplingPeriodInMs)
         self._rightEncoder.enable(self._samplingPeriodInMs)
-        self.step(self._samplingPeriodInMs)  # first reading becomes valid
+        self._inertialUnit = self.getDevice(INERTIAL_UNIT_NAME)
+        self._inertialUnit.enable(self._samplingPeriodInMs)
+        self.step(self._samplingPeriodInMs)  # first readings become valid
 
     @property
     def heading(self) -> Heading:
@@ -79,6 +85,14 @@ class EpuckRobot(Robot):
         """
         return self._cell
 
+    def attachFrontProbe(self, isFrontBlockedFn) -> None:
+        """Attach a front-bump test used by tryMoveForward (IR probing).
+
+        @param isFrontBlockedFn a callable returning True when an obstacle
+            is close ahead.
+        """
+        self._isFrontBlocked = isFrontBlockedFn
+
     def _setWheelSpeeds(
         self, leftFraction: float, rightFraction: float
     ) -> None:
@@ -91,53 +105,47 @@ class EpuckRobot(Robot):
         self._leftMotor.setVelocity(leftFraction * maxSpeed)
         self._rightMotor.setVelocity(rightFraction * maxSpeed)
 
-    def _driveWheelRotation(
-        self, targetRotationInRadians: float, clockwise: bool | None
-    ) -> None:
-        """Drive until the reference wheel turns the target amount.
+    def _yawInDegrees(self) -> float:
+        """Return the robot's yaw from the IMU, in degrees.
 
-        When clockwise is None the robot drives straight (both wheels
-        forward) and progress is the average wheel rotation. Otherwise it
-        spins in place and progress is the left wheel's absolute rotation.
-
-        @param targetRotationInRadians wheel rotation to accumulate.
-        @param clockwise True to spin right, False left, None to go
-            straight.
+        @return the yaw angle in degrees.
         """
-        startLeft = self._leftEncoder.getValue()
-        startRight = self._rightEncoder.getValue()
-        if clockwise is None:
-            self._setWheelSpeeds(CRUISE_FRACTION, CRUISE_FRACTION)
-        elif clockwise:
-            self._setWheelSpeeds(TURN_FRACTION, -TURN_FRACTION)
-        else:
-            self._setWheelSpeeds(-TURN_FRACTION, TURN_FRACTION)
+        return math.degrees(self._inertialUnit.getRollPitchYaw()[2])
 
+    @staticmethod
+    def _shortestDeltaInDegrees(first: float, second: float) -> float:
+        """Return the signed smallest difference first - second.
+
+        @param first a bearing in degrees.
+        @param second a bearing in degrees.
+        @return the difference wrapped to [-180, 180].
+        """
+        return (first - second + 180.0) % 360.0 - 180.0
+
+    def _rotate(self, angleInDegrees: float) -> None:
+        """Spin in place until the measured yaw change reaches the target.
+
+        Closed-loop on the IMU, so wheel-radius error and slip do not affect
+        the result. Positive is clockwise (a right turn).
+
+        @param angleInDegrees the turn magnitude and direction.
+        """
+        remaining = abs(angleInDegrees)
+        clockwise = angleInDegrees > 0
+        self._setWheelSpeeds(
+            TURN_FRACTION if clockwise else -TURN_FRACTION,
+            -TURN_FRACTION if clockwise else TURN_FRACTION,
+        )
+        previousYaw = self._yawInDegrees()
+        turned = 0.0
         while self.step(self._samplingPeriodInMs) != -1:
-            leftDelta = abs(self._leftEncoder.getValue() - startLeft)
-            rightDelta = abs(self._rightEncoder.getValue() - startRight)
-            progress = (
-                (leftDelta + rightDelta) / 2.0
-                if clockwise is None
-                else leftDelta
-            )
-            if progress >= targetRotationInRadians:
+            currentYaw = self._yawInDegrees()
+            turned += abs(self._shortestDeltaInDegrees(currentYaw, previousYaw))
+            previousYaw = currentYaw
+            if turned >= remaining - TURN_TOLERANCE_IN_DEGREES:
                 break
         self._setWheelSpeeds(0.0, 0.0)
         self.step(self._samplingPeriodInMs)
-
-    def _rotate(self, angleInDegrees: float) -> None:
-        """Spin in place by a signed angle (positive is clockwise).
-
-        @param angleInDegrees the turn, positive clockwise (right).
-        """
-        arcInMetres = math.radians(abs(angleInDegrees)) * (
-            AXLE_LENGTH_IN_METRES / 2.0
-        )
-        targetRotationInRadians = arcInMetres / WHEEL_RADIUS_IN_METRES
-        self._driveWheelRotation(
-            targetRotationInRadians, clockwise=angleInDegrees > 0
-        )
 
     def turnTo(self, targetHeading: Heading) -> None:
         """Rotate in place to face a heading and update the pose.
@@ -152,22 +160,53 @@ class EpuckRobot(Robot):
             self._rotate(180.0)
         self._heading = targetHeading
 
-    def moveForward(self) -> None:
-        """Drive forward one cell and update the tracked cell."""
+    def _driveOneCell(self, isBlockedFn):
+        """Drive forward one cell, holding heading, optionally bump-aborting.
+
+        @param isBlockedFn optional callable; if it returns True the drive
+            aborts before completing (used for IR probing).
+        @return a tuple (startLeft, startRight, blocked) of the encoder
+            values before the drive and whether it aborted.
+        """
         targetRotationInRadians = (
             self._cellDistanceInMetres / WHEEL_RADIUS_IN_METRES
         )
-        self._driveWheelRotation(targetRotationInRadians, clockwise=None)
+        startLeft = self._leftEncoder.getValue()
+        startRight = self._rightEncoder.getValue()
+        headingYaw = self._yawInDegrees()
+        blocked = False
+        while self.step(self._samplingPeriodInMs) != -1:
+            if isBlockedFn is not None and isBlockedFn():
+                blocked = True
+                break
+            leftDelta = abs(self._leftEncoder.getValue() - startLeft)
+            rightDelta = abs(self._rightEncoder.getValue() - startRight)
+            if (leftDelta + rightDelta) / 2.0 >= targetRotationInRadians:
+                break
+            error = self._shortestDeltaInDegrees(
+                self._yawInDegrees(), headingYaw
+            )
+            correction = max(
+                -MAX_HEADING_CORRECTION,
+                min(MAX_HEADING_CORRECTION,
+                    HEADING_HOLD_GAIN_PER_DEGREE * error),
+            )
+            self._setWheelSpeeds(
+                CRUISE_FRACTION + correction, CRUISE_FRACTION - correction
+            )
+        self._setWheelSpeeds(0.0, 0.0)
+        self.step(self._samplingPeriodInMs)
+        return startLeft, startRight, blocked
+
+    def _advanceCell(self) -> None:
+        """Step the tracked cell one place along the current heading."""
         rowDelta, columnDelta = self._heading.offset
         self._cell = (self._cell[0] + rowDelta, self._cell[1] + columnDelta)
 
-    def attachFrontProbe(self, isFrontBlockedFn) -> None:
-        """Attach a front-bump test used by tryMoveForward (IR probing).
-
-        @param isFrontBlockedFn a callable returning True when an obstacle
-            is close ahead.
-        """
-        self._isFrontBlocked = isFrontBlockedFn
+    def moveForward(self) -> None:
+        """Drive forward one cell and update the tracked cell."""
+        self._driveOneCell(None)
+        self._advanceCell()
 
     def _reverseToStart(self, startLeft: float, startRight: float) -> None:
         """Reverse until the wheels return near their starting angles.
@@ -179,7 +218,7 @@ class EpuckRobot(Robot):
         while self.step(self._samplingPeriodInMs) != -1:
             leftDelta = abs(self._leftEncoder.getValue() - startLeft)
             rightDelta = abs(self._rightEncoder.getValue() - startRight)
-            if (leftDelta + rightDelta) / 2.0 <= 0.05:
+            if (leftDelta + rightDelta) / 2.0 <= REVERSE_SETTLE_IN_RADIANS:
                 break
         self._setWheelSpeeds(0.0, 0.0)
         self.step(self._samplingPeriodInMs)
@@ -193,28 +232,11 @@ class EpuckRobot(Robot):
 
         @return True if a full cell was covered, False if blocked.
         """
-        targetRotationInRadians = (
-            self._cellDistanceInMetres / WHEEL_RADIUS_IN_METRES
+        startLeft, startRight, blocked = self._driveOneCell(
+            self._isFrontBlocked
         )
-        startLeft = self._leftEncoder.getValue()
-        startRight = self._rightEncoder.getValue()
-        self._setWheelSpeeds(CRUISE_FRACTION, CRUISE_FRACTION)
-
-        blocked = False
-        while self.step(self._samplingPeriodInMs) != -1:
-            if self._isFrontBlocked is not None and self._isFrontBlocked():
-                blocked = True
-                break
-            leftDelta = abs(self._leftEncoder.getValue() - startLeft)
-            rightDelta = abs(self._rightEncoder.getValue() - startRight)
-            if (leftDelta + rightDelta) / 2.0 >= targetRotationInRadians:
-                break
-        self._setWheelSpeeds(0.0, 0.0)
-        self.step(self._samplingPeriodInMs)
-
         if blocked:
             self._reverseToStart(startLeft, startRight)
             return False
-        rowDelta, columnDelta = self._heading.offset
-        self._cell = (self._cell[0] + rowDelta, self._cell[1] + columnDelta)
+        self._advanceCell()
         return True

@@ -333,6 +333,9 @@ E-puck {
   rotation 0 0 1 0
   controller "micromouse"
   turretSlot [
+    InertialUnit {
+      name "inertial unit"
+    }
     Lidar {
       translation 0 0 0.02
       name "lidar"

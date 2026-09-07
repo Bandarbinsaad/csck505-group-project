@@ -30,6 +30,9 @@ class FakeDevice:
     def getRangeImage(self):
         return self.rangeImage
 
+    def getRollPitchYaw(self):
+        return [0.0, 0.0, 0.0]
+
 
 class FakeRobot:
     """Minimal Robot: hands out FakeDevices, ends step loops at once."""
