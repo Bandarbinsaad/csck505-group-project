@@ -1,12 +1,12 @@
-from end_of_module_assignment.maze.explorer import ExploreResult, explore
-from end_of_module_assignment.maze.interfaces import RobotDriver, WallSensor
-from end_of_module_assignment.maze.mapper import Map, OBSTACLE
-from end_of_module_assignment.maze.offline_sim import (
+from mazebot.maze.explorer import ExploreResult, explore
+from mazebot.maze.interfaces import RobotDriver, WallSensor
+from mazebot.maze.mapper import Map, OBSTACLE
+from mazebot.maze.offline_sim import (
     FakeMaze,
     FakeRobot,
     FakeSensor,
 )
-from end_of_module_assignment.maze.types import Heading
+from mazebot.maze.types import Heading
 
 # The group's 5x5 maze (True = wall block). Mirrors maze.py MAZE.
 GROUP_MAZE = [

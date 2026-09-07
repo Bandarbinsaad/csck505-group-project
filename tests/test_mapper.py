@@ -1,12 +1,12 @@
 import json
 
-from end_of_module_assignment.maze.mapper import (
+from mazebot.maze.mapper import (
     FREE,
     OBSTACLE,
     UNKNOWN,
     Map,
 )
-from end_of_module_assignment.maze.types import Heading, Sides
+from mazebot.maze.types import Heading, Sides
 
 
 def testNewMapIsAllUnknown():

@@ -5,11 +5,11 @@ only wire Webots devices to it.
 """
 from __future__ import annotations
 
-from end_of_module_assignment.maze.sensing_logic import (
+from mazebot.maze.sensing_logic import (
     lidarToSides,
     proximityToSides,
 )
-from end_of_module_assignment.maze.types import Sides
+from mazebot.maze.types import Sides
 
 PROXIMITY_SENSOR_NAMES = (
     "ps0", "ps1", "ps2", "ps3", "ps4", "ps5", "ps6", "ps7",

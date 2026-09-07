@@ -1,7 +1,7 @@
 [project]
-name = "end-of-module-assignment"
+name = "mazebot"
 version = "0.1.0"
-description = "Add your description here"
+description = "Behaviour-based maze exploration and map building for a Webots e-puck."
 readme = "README.md"
 authors = [
     { name = "Alex Senger", email = "alex.senger@icloud.com" }
@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-render-map = "end_of_module_assignment.render_map:main"
+render-map = "mazebot.render_map:main"
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]

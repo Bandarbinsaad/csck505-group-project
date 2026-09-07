@@ -1,5 +1,5 @@
-from end_of_module_assignment.maze.policy import chooseMove
-from end_of_module_assignment.maze.types import Action, Sides
+from mazebot.maze.policy import chooseMove
+from mazebot.maze.types import Action, Sides
 
 NONE = Sides(False, False, False, False)
 

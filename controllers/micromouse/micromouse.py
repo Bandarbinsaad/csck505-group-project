@@ -15,16 +15,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 _MAZE_NAME = sys.argv[1] if len(sys.argv) > 1 else "maze"
 maze = importlib.import_module(
-    "end_of_module_assignment.layouts." + _MAZE_NAME
+    "mazebot.layouts." + _MAZE_NAME
 )
 
 from robot import EpuckRobot  # noqa: E402
 from sensing import LidarWallSensor, ProximitySensorArray  # noqa: E402
 
-from end_of_module_assignment.maze.explorer import explore  # noqa: E402
-from end_of_module_assignment.maze.mapper import Map  # noqa: E402
-from end_of_module_assignment.maze.prober import exploreByProbing  # noqa: E402
-from end_of_module_assignment.maze.types import Heading  # noqa: E402
+from mazebot.maze.explorer import explore  # noqa: E402
+from mazebot.maze.mapper import Map  # noqa: E402
+from mazebot.maze.prober import exploreByProbing  # noqa: E402
+from mazebot.maze.types import Heading  # noqa: E402
 
 SENSOR_NAME = "lidar"  # "proximity" | "lidar"
 START_HEADING = Heading.E

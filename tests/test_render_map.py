@@ -1,6 +1,6 @@
 import json
 
-from end_of_module_assignment.render_map import matrixToRgb, render
+from mazebot.render_map import matrixToRgb, render
 
 RED = (0.9, 0.1, 0.1)
 

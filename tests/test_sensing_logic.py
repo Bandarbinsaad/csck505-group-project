@@ -1,8 +1,8 @@
-from end_of_module_assignment.maze.sensing_logic import (
+from mazebot.maze.sensing_logic import (
     lidarToSides,
     proximityToSides,
 )
-from end_of_module_assignment.maze.types import Sides
+from mazebot.maze.types import Sides
 
 
 def testProximityWallWhenAtOrAboveThreshold():

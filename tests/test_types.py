@@ -1,4 +1,4 @@
-from end_of_module_assignment.maze.types import Action, Heading, Sides
+from mazebot.maze.types import Action, Heading, Sides
 
 
 def testHeadingTurnsAreCyclic():

@@ -7,11 +7,11 @@ CONTROLLER_DIR = (
 )
 sys.path.insert(0, str(CONTROLLER_DIR))
 
-from end_of_module_assignment.maze.interfaces import (  # noqa: E402
+from mazebot.maze.interfaces import (  # noqa: E402
     RobotDriver,
     WallSensor,
 )
-from end_of_module_assignment.maze.types import Heading, Sides  # noqa: E402
+from mazebot.maze.types import Heading, Sides  # noqa: E402
 
 
 def testProximityArrayReadsSides(fakeController):

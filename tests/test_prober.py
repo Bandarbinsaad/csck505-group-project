@@ -1,9 +1,9 @@
-from end_of_module_assignment.maze.explorer import ExploreResult
-from end_of_module_assignment.maze.interfaces import ProbeRobotDriver
-from end_of_module_assignment.maze.mapper import FREE, OBSTACLE, UNKNOWN, Map
-from end_of_module_assignment.maze.offline_sim import FakeMaze, FakeRobot
-from end_of_module_assignment.maze.prober import exploreByProbing
-from end_of_module_assignment.maze.types import Heading
+from mazebot.maze.explorer import ExploreResult
+from mazebot.maze.interfaces import ProbeRobotDriver
+from mazebot.maze.mapper import FREE, OBSTACLE, UNKNOWN, Map
+from mazebot.maze.offline_sim import FakeMaze, FakeRobot
+from mazebot.maze.prober import exploreByProbing
+from mazebot.maze.types import Heading
 
 # The group's 5x5 maze (True = wall block). Mirrors maze.py MAZE.
 GROUP_MAZE = [

@@ -13,7 +13,7 @@ import math
 
 from controller import Robot
 
-from end_of_module_assignment.maze.types import Cell, Heading
+from mazebot.maze.types import Cell, Heading
 
 WHEEL_RADIUS_IN_METRES = 0.02          # e-puck proto wheel cylinder radius
 MAX_WHEEL_SPEED_IN_RADIANS_PER_SECOND = 6.28
