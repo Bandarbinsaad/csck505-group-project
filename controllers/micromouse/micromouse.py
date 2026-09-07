@@ -46,7 +46,7 @@ def buildSensor(robot, samplingPeriodInMs):
 
 
 def main():
-    """Run one exploration, print the map, and dump map.json/map.txt."""
+    """Run one exploration, print the map, and dump the map files."""
     startCell = maze.startCell()
     goalCell = maze.finishCell()
 
@@ -68,7 +68,7 @@ def main():
     elapsedInSeconds = robot.getTime() - startTimeInSeconds
 
     grid.dump(
-        "map", sensorName=SENSOR_NAME,
+        "map_" + SENSOR_NAME, sensorName=SENSOR_NAME,
         timeInSeconds=elapsedInSeconds, stepCount=result.stepCount,
     )
     for row in grid.toMatrix():
