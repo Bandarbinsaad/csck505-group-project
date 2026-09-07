@@ -16,9 +16,6 @@ class FakeDevice:
     def enable(self, samplingPeriodInMs):
         pass
 
-    def enablePointCloud(self):
-        pass
-
     def setPosition(self, position):
         pass
 
@@ -58,7 +55,5 @@ class FakeRobot:
 def fakeController(monkeypatch):
     module = pythonTypes.ModuleType("controller")
     module.Robot = FakeRobot
-    module.Lidar = FakeDevice
-    module.DistanceSensor = FakeDevice
     monkeypatch.setitem(sys.modules, "controller", module)
     return module
