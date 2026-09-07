@@ -4,15 +4,20 @@ Set SENSOR_NAME to "proximity" (Experiment 1) or "lidar" (Experiment 2).
 All other logic is identical between runs. The maze, start and finish come
 from the group's maze.py (single source of truth). Reload the world before
 each run. Thresholds are placeholders - calibrate against the smoke-test
-evidence (proximity wall ~150-250; lidar wall ~0.15 m for a 0.25 m cell).
+evidence (proximity wall ~150-250; lidar wall ~0.18 m for a 0.25 m cell).
 """
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-# maze.py lives at the repo root (two levels above this controller).
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+# The repo root (two levels above this controller) holds maze.py; its src/
+# holds the end_of_module_assignment package. Adding both to sys.path lets
+# Webots run this controller under any interpreter it launches, without
+# needing the uv venv on the Python command.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_REPO_ROOT / "src"))
+sys.path.insert(0, str(_REPO_ROOT))
 
 import maze  # noqa: E402  (repo-root single source of truth)
 from robot import EpuckRobot  # noqa: E402
@@ -22,11 +27,12 @@ from end_of_module_assignment.maze.explorer import explore  # noqa: E402
 from end_of_module_assignment.maze.mapper import Map  # noqa: E402
 from end_of_module_assignment.maze.types import Heading  # noqa: E402
 
-SENSOR_NAME = "proximity"           # "proximity" | "lidar"
+SENSOR_NAME = "lidar"  # "proximity" | "lidar"
 START_HEADING = Heading.E           # e-puck starts facing east
 PROXIMITY_WALL_THRESHOLD = 200.0    # calibrate
 LIDAR_WALL_THRESHOLD_IN_METRES = 0.15  # calibrate
 MAX_STEP_COUNT = 200
+WARM_UP_STEP_COUNT = 3              # sensors need a step after enable
 
 
 def buildSensor(robot, samplingPeriodInMs):
@@ -59,6 +65,12 @@ def main():
     samplingPeriodInMs = int(robot.getBasicTimeStep())
 
     sensor = buildSensor(robot, samplingPeriodInMs)
+
+    # Sensor data is only valid after at least one simulation step following
+    # enable(); the lidar's getRangeImage() crashes if read before then.
+    for _ in range(WARM_UP_STEP_COUNT):
+        robot.step(samplingPeriodInMs)
+
     grid = Map(maze.ROW_COUNT, maze.COLUMN_COUNT)
 
     startTimeInSeconds = robot.getTime()

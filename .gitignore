@@ -2,3 +2,8 @@ __pycache__/
 *.pyc 
 .vscode/ 
 *.wbproj 
+.DS_Store
+# generated run artifacts (map dumps + rendered images)
+map_*.json
+map_*.txt
+map_*.png
