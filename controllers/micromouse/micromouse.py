@@ -1,0 +1,117 @@
+"""Micromouse controller: reactive exploration and map building.
+
+SENSOR_NAME selects the experiment: "lidar" senses all four sides from the
+cell centre; "proximity" uses short-range IR, which cannot see a wall a full
+cell away and so discovers walls by probing (bumping) into them. The maze is
+chosen by the robot's Webots controllerArgs and defaults to "maze".
+"""
+
+from __future__ import annotations
+
+import importlib
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+
+_MAZE_NAME = sys.argv[1] if len(sys.argv) > 1 else "maze"
+maze = importlib.import_module("mazebot.layouts." + _MAZE_NAME)
+
+from robot import EpuckRobot
+from sensing import LidarWallSensor, ProximitySensorArray
+
+from mazebot.maze.explorer import explore
+from mazebot.maze.mapper import Map
+from mazebot.maze.prober import exploreByProbing
+from mazebot.maze.types import Heading
+
+SENSOR_NAME = "lidar"  # "proximity" | "lidar"
+START_HEADING = Heading.E
+PROXIMITY_WALL_THRESHOLD = 200.0
+PROXIMITY_PROBE_CONTACT = 200.0
+LIDAR_WALL_THRESHOLD_IN_METRES = 0.22
+MAX_STEP_COUNT = 200
+WARM_UP_STEP_COUNT = 3
+
+
+def warmUp(robot, samplingPeriodInMs):
+    """Step a few times so newly enabled sensors return valid data.
+
+    @param robot the EpuckRobot.
+    @param samplingPeriodInMs sampling period in milliseconds.
+    """
+    for _ in range(WARM_UP_STEP_COUNT):
+        robot.step(samplingPeriodInMs)
+
+
+def runLidar(robot, samplingPeriodInMs, grid, goalCell):
+    """Experiment 2: explore with the lidar wall sensor.
+
+    @param robot the EpuckRobot.
+    @param samplingPeriodInMs sampling period in milliseconds.
+    @param grid the map to populate.
+    @param goalCell the finish (row, column).
+    @return the ExploreResult.
+    """
+    sensor = LidarWallSensor(
+        robot, samplingPeriodInMs, LIDAR_WALL_THRESHOLD_IN_METRES
+    )
+    warmUp(robot, samplingPeriodInMs)
+    return explore(robot, sensor, grid, goalCell, maxStepCount=MAX_STEP_COUNT)
+
+
+def runProximity(robot, samplingPeriodInMs, grid, goalCell):
+    """Experiment 1: explore by IR probing (front-bump wall following).
+
+    @param robot the EpuckRobot.
+    @param samplingPeriodInMs sampling period in milliseconds.
+    @param grid the map to populate.
+    @param goalCell the finish (row, column).
+    @return the ExploreResult.
+    """
+    proximity = ProximitySensorArray(
+        robot, samplingPeriodInMs, PROXIMITY_WALL_THRESHOLD
+    )
+    warmUp(robot, samplingPeriodInMs)
+    robot.attachFrontProbe(
+        lambda: proximity.frontValue() >= PROXIMITY_PROBE_CONTACT
+    )
+    return exploreByProbing(robot, grid, goalCell, maxStepCount=MAX_STEP_COUNT)
+
+
+def main():
+    """Run one exploration, print the map, and dump the map files."""
+    robot = EpuckRobot(
+        cellDistanceInMetres=maze.CELL_SIZE,
+        startCell=maze.startCell(),
+        startHeading=START_HEADING,
+    )
+    robot.initialiseDevices()
+    samplingPeriodInMs = int(robot.getBasicTimeStep())
+    goalCell = maze.finishCell()
+    grid = Map(maze.ROW_COUNT, maze.COLUMN_COUNT)
+
+    startTimeInSeconds = robot.getTime()
+    if SENSOR_NAME == "proximity":
+        result = runProximity(robot, samplingPeriodInMs, grid, goalCell)
+    else:
+        result = runLidar(robot, samplingPeriodInMs, grid, goalCell)
+    elapsedInSeconds = robot.getTime() - startTimeInSeconds
+
+    grid.dump(
+        "map_" + SENSOR_NAME,
+        sensorName=SENSOR_NAME,
+        timeInSeconds=elapsedInSeconds,
+        stepCount=result.stepCount,
+    )
+    for row in grid.toMatrix():
+        print(" ".join(row))
+    print(
+        f"sensor={SENSOR_NAME} reachedGoal={result.reachedGoal} "
+        f"time={elapsedInSeconds:.2f}s steps={result.stepCount} "
+        f"visited={result.cellsVisited}"
+    )
+
+
+if __name__ == "__main__":
+    main()

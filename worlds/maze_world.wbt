@@ -331,8 +331,11 @@ Solid {
 E-puck {
   translation -0.5 0.5 0
   rotation 0 0 1 0
-  controller "sensor_smoke_test"
+  controller "micromouse"
   turretSlot [
+    InertialUnit {
+      name "inertial unit"
+    }
     Lidar {
       translation 0 0 0.02
       name "lidar"
